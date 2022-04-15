@@ -1,3 +1,3 @@
 # Notas
 
-Base para armar un restAPI
+CRUD basico
