@@ -9,7 +9,54 @@
 </head>
 
 <body>
-  <h1>Acceso Denegado</h1>
+  <h1>Google Sign-in</h1>
+  <hr>
+  <div id="g_id_onload" data-client_id="979180355744-ni7vpv4iftv1hk9i875hi00i3c5cepm4.apps.googleusercontent.com"
+    data-callback="handleCredentialResponse" data-auto_prompt="false">
+  </div>
+  <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with"
+    data-shape="rectangular" data-logo_alignment="left">
+  </div>
+
+
+  <button id="google_signout_buttom">SIGN OUT</button>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    function handleCredentialResponse(response) {
+      // Google Token: ID_TOKEN
+      // console.log('id_token', response.credential);
+
+      // El fetch por defecto es una peticion GET, en este caso queremos hacer una peticion POST para poder obtener los tokens
+      // para eso cambiamos las configuraciones de fetch especificando el metodo y mandando el header y el body serealizado como un JSON
+
+      const body = { id_token: response.credential };
+
+      fetch('http://localhost:8080/api/auth/google', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      })
+        .then(resp => resp.json())
+        .then(resp => {
+          console.log(resp)
+          localStorage.setItem('email', resp.user.email)
+        })
+        .catch(err => console.warn(err));
+    }
+
+    const buttonSignOut = document.getElementById('google_signout_buttom');
+    buttonSignOut.onclick = () => {
+      google.accounts.id.disableAutoSelect();
+      google.accounts.id.revoke(localStorage.getItem('email'), ()=>{
+        localStorage.clear();
+        location.reload();
+      });
+    }
+
+  </script>
 </body>
 
 </html>

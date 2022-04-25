@@ -1,6 +1,4 @@
 
-
-
 const isAdminRole = (req, resp, next) => {
 
   if (!req.user) {

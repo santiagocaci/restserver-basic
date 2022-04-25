@@ -29,7 +29,6 @@ const userGet = async (req, res = response) => {
 const userPost = async (req, res = response) => {
 
 
-
   // Es importante que el body deba tener una limpieza
   const { name, password, email, role } = req.body;
   const user = new User({ name, password, email, role });

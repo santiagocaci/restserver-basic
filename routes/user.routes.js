@@ -22,7 +22,6 @@ const { userGet,
   userPatch } = require('../controllers/user.controller');
 const router = Router();
 
-module.exports = router;
 
 router.get('/', [
   check('limit', 'The value is not a number').isInt(),
@@ -32,7 +31,7 @@ router.get('/', [
 
 router.post('/', [
   // este es un array de middleware
-
+  
   check('name', 'Name is required').not().isEmpty(),
   check('password', 'Password is required and must be six characters or more').isLength({ min: 6 }).not().isEmpty(),
   check('email', 'The email entered is not valid').isEmail(),
@@ -59,3 +58,5 @@ router.delete('/:id', [
   check('id').custom(userExistsById),
   validateFields
 ], userDelete);
+
+module.exports = router;
