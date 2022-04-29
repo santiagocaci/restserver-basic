@@ -1,12 +1,19 @@
 const express = require('express');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
+
 const { dbConection } = require('../database/config.js');
+
+const { socketController } = require('../sockets/socketController.js');
 
 class Server {
   constructor() {
     this.app = express();
     this.port = process.env.PORT;
+
+    // Configuracion con socket.io
+    this.server = require('http').createServer(this.app);
+    this.io = require('socket.io')(this.server);
 
     this.paths = {
       auth: '/api/auth',
@@ -30,6 +37,9 @@ class Server {
 
     // Rutas de mi apps
     this.routes();
+
+    // Sockets
+    this.sockets();
   }
 
   async connectDataBase() {
@@ -49,10 +59,10 @@ class Server {
 
     // Fileupload - maneja la carga de archivos
     this.app.use(fileUpload({
-      useTempFiles : true,
-      tempFileDir : '/tmp/',
+      useTempFiles: true,
+      tempFileDir: '/tmp/',
       createParentPath: true
-  }));
+    }));
   }
 
   routes() {
@@ -65,9 +75,20 @@ class Server {
     this.app.use(this.paths.uploads, require('../routes/uploads.routes.js'));
   }
 
+  sockets() {
+    // Mandando el io como argumento puedo hacer un emit general, avisando a todos que un user se conecto
+    this.io.on('connection', (socket) => socketController(socket, this.io));
+  }
+
   listen() {
-    this.app.listen(this.port, () => {
-      console.log('Servidor corriendo en puerto:', this.port);
+    // Con el servidor de express sin socket.io es de esta forma
+    // this.app.listen(this.port, () => {
+    //   console.log('Servidor corriendo en puerto:', this.port);
+    // });
+
+    // Con el server de socket.io por que express no ocupa socket
+    this.server.listen(this.port, () => {
+      console.log('Servidor corriendo en el puerto:', this.port);
     });
   }
 }

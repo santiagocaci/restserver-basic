@@ -4,6 +4,7 @@ const bcryptjs = require('bcrypt');
 const User = require("../models/user");
 const { generarJWT } = require("../helpers/generar-jwt");
 const { googleVerify } = require("../helpers/google-verify");
+const res = require("express/lib/response");
 // const { DefaultTransporter } = require("google-auth-library");
 
 
@@ -55,22 +56,22 @@ const googleSignIn = async (request, response) => {
 
   try {
 
-    const {name, picture: img, email} = await googleVerify( id_token);
+    const { name, picture: img, email } = await googleVerify(id_token);
     // Puede que el user exista o no y que es la primera vez
-    let user = await User.findOne({email});
+    let user = await User.findOne({ email });
     if (!user) {
       const data = {
         name,
         email,
         password: ':P',
         img,
-        google: true, 
+        google: true,
       }
       user = new User(data);
       await user.save();
     }
 
-    if(!user.status){
+    if (!user.status) {
       return response.status(401).json({
         msg: 'Hable con el admin, usuario bloqueado'
       });
@@ -83,7 +84,7 @@ const googleSignIn = async (request, response) => {
       user,
       token
     });
-    
+
   } catch (error) {
     response.status(400).json({
       ok: false,
@@ -92,7 +93,19 @@ const googleSignIn = async (request, response) => {
   }
 }
 
+const validationTokenController = async(req, resp) => {
+  const { user } = req;
+
+  // Generar el JWT
+  const token = await generarJWT(user.id);
+  resp.json({
+    user,
+    token
+  });
+}
+
 module.exports = {
   login,
-  googleSignIn
+  googleSignIn,
+  validationTokenController
 }
