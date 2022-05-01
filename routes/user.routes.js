@@ -19,7 +19,8 @@ const { userGet,
   userPut,
   userPost,
   userDelete,
-  userPatch } = require('../controllers/user.controller');
+  userPatch,
+  userGetByName } = require('../controllers/user.controller');
 const router = Router();
 
 
@@ -29,9 +30,15 @@ router.get('/', [
   validateFields
 ], userGet);
 
+router.get('/:name', [
+  check('name', 'The value is not a string').isString(),
+  check('name', 'The value is not a string').not().isEmpty(),
+  validateFields
+], userGetByName);
+
 router.post('/', [
   // este es un array de middleware
-  
+
   check('name', 'Name is required').not().isEmpty(),
   check('password', 'Password is required and must be six characters or more').isLength({ min: 6 }).not().isEmpty(),
   check('email', 'The email entered is not valid').isEmail(),

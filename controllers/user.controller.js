@@ -7,11 +7,6 @@ const userGet = async (req, res = response) => {
   // const query = req.query;
 
   const { limit = 0, skip = 0 } = req.query;
-  // const users = await User.find({ status: true })
-  //   .limit(limit)
-  //   .skip(skip);
-
-  // const total = await User.countDocuments({ status: true });
 
   const [total, users] = await Promise.all([
     User.countDocuments({ status: true }),
@@ -26,20 +21,26 @@ const userGet = async (req, res = response) => {
   });
 }
 
+const userGetByName = async (req, res) => {
+  const { name } = req.params;
+
+  const user = await User.findOne({ name: new RegExp('^' + name + '$', 'i') });
+
+  if (!user) {
+    return res.status(400).json({
+      msg: `User ${name} no encontrado`
+    });
+  }
+
+  res.json(user);
+}
+
 const userPost = async (req, res = response) => {
 
 
   // Es importante que el body deba tener una limpieza
   const { name, password, email, role } = req.body;
   const user = new User({ name, password, email, role });
-
-  // // Verificar si el correo existe
-  // const existEmail = await User.findOne({ email });
-  // if (existEmail) {
-  //   return res.status(400).json({
-  //     msg: 'The email is already registered'
-  //   })
-  // }
 
   // Encriptar la contraseña
   const salt = bcryptjs.genSaltSync();
@@ -75,16 +76,16 @@ const userPatch = (req, res = response) => {
   });
 }
 
-const userDelete = async(req = request, res = response) => {
-  const {id} = req.params;
+const userDelete = async (req = request, res = response) => {
+  const { id } = req.params;
 
   // Borrarlo fisicamente
   // const user = await User.findByIdAndDelete(id);
 
-  const user = await User.findByIdAndUpdate(id, {status: false});
+  const user = await User.findByIdAndUpdate(id, { status: false }, { new: true });
   const userAutenticado = req.user;
 
-  res.json({user});
+  res.json({ user });
 }
 
 module.exports = {
@@ -93,4 +94,5 @@ module.exports = {
   userPut,
   userPatch,
   userDelete,
+  userGetByName,
 }
